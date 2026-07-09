@@ -71,7 +71,7 @@ const loadSalesReport = async (req, res) => {
 
 
     res.render(
-      "salesReport",
+      "salesreport",
       {
         orders,
 
