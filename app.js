@@ -21,6 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(methodOverride('_method'));
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // trust first proxy for secure cookies on Render
+}
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -34,7 +38,7 @@ app.use(
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // ✅ 7 days in ms
       httpOnly: true,
-      secure: false, // ✅ keep false in localhost, true in HTTPS
+      secure: process.env.NODE_ENV === 'production', // ✅ keep false in localhost, true in HTTPS
       sameSite: 'lax',
     },
   })
