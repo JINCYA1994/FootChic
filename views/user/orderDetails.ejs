@@ -1,0 +1,114 @@
+<%- include('../partials/user/header') %>
+
+<div class="container mt-4 pt-3">
+
+<h3 class="fw-bold mb-4">Order Details</h3>
+
+<!-- ORDER INFO -->
+<div class="card shadow-sm p-3 mb-4">
+
+<div class="row">
+
+<div class="col-md-4">
+<h6 class="fw-bold">Order Info</h6>
+<p>Order ID: <strong><%= order.orderId %></strong></p>
+<p>Date: <%= new Date(order.createdAt || order.ordered_at).toLocaleDateString() %></p>
+
+<p>Status:
+<span class="badge bg-primary"><%= order.status %></span>
+</p>
+</div>
+
+<div class="col-md-4">
+<h6 class="fw-bold">Shipping Address</h6>
+<p class="mb-0"><%= order.delivery_address.name %></p>
+<p class="mb-0"><%= order.delivery_address.house_name %></p>
+<p class="mb-0"><%= order.delivery_address.locality %></p>
+<p class="mb-0"><%= order.delivery_address.city %>, <%= order.delivery_address.state %></p>
+<p class="mb-0">Pin: <%= order.delivery_address.pincode %></p>
+<p class="mb-0">Ph: <%= order.delivery_address.mobilenumber %></p>
+</div>
+
+<div class="col-md-4">
+<h6 class="fw-bold">Summary</h6>
+<p>Total: <strong>₹<%= order.total_price %></strong></p>
+
+<a href="/invoice/<%= order._id %>" class="btn btn-primary btn-sm w-100 mt-2">
+View Invoice
+</a>
+</div>
+
+</div>
+</div>
+
+<!-- PRODUCTS TABLE -->
+<div class="card shadow-sm p-3">
+
+<h5 class="mb-3">Products</h5>
+
+<table class="table table-bordered align-middle text-center">
+
+<thead class="table-light">
+<tr>
+<th>Product</th>
+<th>Image</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% orderItems.forEach(item => { %>
+
+<tr>
+
+<td class="fw-bold"><%= item.product_name %></td>
+
+<td>
+<img src="<%= item.image || '/images/default-product.png' %>" width="50">
+</td>
+
+<td><%= item.quantity %></td>
+
+<td>₹<%= item.price %></td>
+
+<td>₹<%= item.price * item.quantity %></td>
+
+<td>
+
+<% if(item.status === "Cancelled"){ %>
+<span class="badge bg-danger">Cancelled</span>
+
+<% } else if(item.status === "Returned"){ %>
+<span class="badge bg-success">Returned</span>
+
+<% } else if(item.status === "Return Requested"){ %>
+<span class="badge bg-warning text-dark">Return Requested</span>
+
+<% } else { %>
+<span class="badge bg-info"><%= item.status %></span>
+<% } %>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+</table>
+
+</div>
+
+<div class="text-center mt-3">
+<a href="/orders" class="btn btn-secondary">
+← Back
+</a>
+</div>
+
+</div>
+
+<%- include('../partials/user/footer') %>

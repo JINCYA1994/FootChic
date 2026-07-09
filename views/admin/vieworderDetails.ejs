@@ -1,0 +1,244 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container mt-5 pt-4">
+
+<h3 class="fw-bold mb-4">Order Details</h3>
+
+<!-- ORDER INFO -->
+<div class="card shadow-sm p-4 mb-4">
+
+<div class="row">
+
+<div class="col-md-4">
+
+<h6 class="fw-bold">Order Info</h6>
+
+<p>Order ID: <strong><%= order.orderId %></strong></p>
+
+<p>Date: <%= new Date(order.ordered_at).toLocaleDateString() %></p>
+
+<p>Status:
+<span class="badge bg-primary"><%= order.status %></span>
+</p> 
+
+</div>
+
+<div class="col-md-4">
+
+<h6 class="fw-bold">Customer</h6>
+
+<p><%= order.user_id.firstname || order.user_id.username %></p>
+
+<p><%= order.user_id.email %></p>
+
+</div>
+
+<div class="col-md-4">
+
+<h6 class="fw-bold">Shipping Address</h6>
+
+<p><%= order.delivery_address.name %></p>
+<p><%= order.delivery_address.house_name %></p>
+<p><%= order.delivery_address.locality %></p>
+<p><%= order.delivery_address.city %>, <%= order.delivery_address.state %></p>
+<p>Pin: <%= order.delivery_address.pincode %></p>
+<p>Mobile: <%= order.delivery_address.mobilenumber %></p>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCTS -->
+
+<h5 class="mb-3">Ordered Products</h5>
+
+<div class="card shadow-sm p-3">
+
+<table class="table table-bordered align-middle">
+
+<thead class="table-light">
+<tr>
+<th>Product</th>
+<th>Image</th>
+<th>Quantity</th>
+<th>Price</th>
+<th>Total</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% orderItems.forEach(item => { %>
+
+<tr>
+
+<td><strong><%= item.product_name %></strong></td>
+
+<td>
+<img src="<%= item.image %>" width="60">
+</td>
+
+<td><%= item.quantity %></td>
+
+<td>₹<%= item.price %></td>
+
+<td>₹<%= item.price * item.quantity %></td>
+
+<td>
+
+
+<span class="badge 
+<%= item.status === 'Cancelled' ? 'bg-danger' :
+    item.status === 'Returned' ? 'bg-success' :
+    item.status === 'Return Requested' ? 'bg-warning text-dark' :
+    item.status === 'Delivered' ? 'bg-success' :
+    item.status === 'Shipped' ? 'bg-info' :
+    'bg-secondary' %>">
+
+<%= item.status %>
+
+</span>
+</td>
+<td>
+
+<% if(item.status === 'Return Requested'){ %>
+
+<form action="/admin/orders/return" method="POST" class="d-flex gap-2">
+
+  <input type="hidden" name="orderId" value="<%= order._id %>">
+  <input type="hidden" name="productId" value="<%= item._id %>">
+
+  <button type="button" class="btn btn-success btn-sm accept-btn">
+    Accept
+  </button>
+
+  <button type="button" class="btn btn-danger btn-sm reject-btn">
+    Reject
+  </button>
+
+</form>
+
+<% } else if (item.status === 'Returned' || item.status === 'Cancelled') { %>
+
+<span class="text-muted">No Actions</span>
+
+<% } else { %>
+
+<form action="/admin/orders/update-product-status/<%= item._id %>" method="POST">
+
+<select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+
+<option value="Processing" <%= item.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+
+<option value="Shipped" <%= item.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+
+<option value="Delivered" <%= item.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+
+<option value="Cancelled" <%= item.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+
+</select>
+
+</form>
+
+<% } %>
+
+</td>
+
+
+
+</tr>
+
+<% }) %>
+
+</tbody>
+</table>
+
+</div>
+
+<div class="text-center mt-4">
+
+<a href="/admin/orders" class="btn btn-secondary">
+← Back to Orders
+</a>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.accept-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+
+    const form = this.closest('form');
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Approve this return request?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Approve"
+    }).then((result) => {
+      if (result.isConfirmed) {
+
+        // dynamically add action input
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "action";
+        input.value = "approve";
+
+        form.appendChild(input);
+
+        form.submit();
+      }
+    });
+
+  });
+});
+document.querySelectorAll('.reject-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+
+    const form = this.closest('form');
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to reject this return request?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Reject",
+      cancelButtonText: "Cancel"
+    }).then((result) => {
+      if (result.isConfirmed) {
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "action";
+        input.value = "reject";
+
+        form.appendChild(input);
+
+        form.submit();
+      }
+    });
+
+  });
+});
+</script>
+
+
+<% if (orderMessage) { %>
+<script>
+  Swal.fire({
+    icon: 'success',
+    text: '<%= orderMessage %>',
+    showConfirmButton: false,
+    timer:2000
+  });
+</script>
+<% } %>
+
+<%- include("../../views/partials/admin/footer") %>

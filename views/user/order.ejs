@@ -1,0 +1,585 @@
+<%- include('../../views/partials/user/header') %>
+
+<style>
+  body {
+    background-color: #f5f5f5;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .breadcrumb {
+    background: transparent;
+    font-size: 15px;
+    margin-top: 50px;
+    margin-left: 80px;
+  }
+
+  .card-custom {
+    background: #fff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+  }
+
+  .order-box {
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+</style>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/" class="text-dark">Home</a></li>
+    <li class="breadcrumb-item active">My Orders</li>
+  </ol>
+</nav>
+
+<div class="profile-container">
+
+  <%- include('../../views/partials/user/profileSidebar', { userData, activePage: 'orders' }) %>
+
+  <div class="profile-content">
+
+    <div class="card-custom">
+      <h5>My Orders</h5>
+
+      <!-- Search -->
+      <form method="GET" action="/orders" class="d-flex mb-4">
+        <input type="text" name="search" value="<%= search %>" class="form-control me-2" placeholder="Search Order ID">
+        <button class="btn btn-dark me-2">Search</button>
+        <a href="/orders" class="btn btn-secondary">Clear</a>
+      </form>
+
+      <% if(orders.length === 0){ %>
+        <div class="alert alert-dark">No Orders Found</div>
+      <% } %>
+
+      <% orders.forEach(order => { %>
+
+      <div class="order-box">
+
+        <!-- ORDER HEADER -->
+        <div class="row align-items-center">
+
+          <div class="col-md-3">
+            <strong>Order ID</strong>
+            <p><%= order.orderId %></p>
+          </div>
+
+          <div class="col-md-2">
+            <strong>Date</strong>
+            <p><%= order.createdAt.toDateString() %></p>
+          </div>
+
+          <div class="col-md-2">
+            <strong>Total</strong>
+            <p>₹<%= order.total_price %></p>
+          </div>
+
+          <div class="col-md-2">
+            <strong>Status</strong><br>
+            <span class="badge
+              <%= order.status === 'Cancelled' ? 'bg-danger' :
+                  order.status === 'Delivered' ? 'bg-success' :
+                  'bg-warning text-dark' %>
+              status-badge">
+              <%= order.status %>
+            </span>
+          </div>
+
+          <div class="col-md-3 text-end">
+<% if(order.status === "Payment Failed"){ %>
+<!-- 
+<button
+  class="btn btn-sm btn-danger  retry-payment-btn"
+  data-orderid="<%= order.orderId %>">
+  Retry Payment
+</button> -->
+ <button class="btn btn-sm btn-danger retry-btn"
+        onclick="retryPayment('<%= order.orderId %>')">
+   Retry Payment
+</button>
+<% } %>
+
+            <a href="/orders/<%= order.orderId %>" class="btn btn-sm btn-outline-dark mb-2">
+              View Details
+            </a>
+
+            <% if(order.status === "Processing"){ %>
+              <button class="btn btn-sm btn-danger cancel-btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#cancelModal"
+                      data-id="<%= order._id %>">
+                Cancel Order
+              </button>
+
+            <% } 
+             else if(order.status === "Cancelled"){ %>
+              <span class="badge bg-danger">ORDER CANCELLED</span>
+            <% } %>
+
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- PRODUCTS -->
+        <% order.products.forEach(product => { %>
+
+        <div class="row align-items-center mb-2">
+
+          <div class="col-md-1">
+            <img src="<%= product.image %>" class="img-fluid">
+          </div>
+
+          <div class="col-md-5">
+            <strong><%= product.name %></strong><br>
+            Qty: <%= product.quantity %> |
+            ₹<%= product.price %> |
+            Size: <%= product.size %>
+          </div>
+
+          <div class="col-md-3">
+
+            <%
+              const isCancelled = product.status === "Cancelled";
+              const isReturned = product.status === "Returned";
+              const isReturnRequested = product.status === "Return Requested";
+              const isReturnRejected = product.status === "Return Rejected"; 
+            %>
+
+          <% if(isCancelled){ %>
+
+  <span class="badge bg-danger">PRODUCT CANCELLED</span>
+
+<% } else if(isReturnRequested){ %>
+
+  <span class="badge bg-warning text-dark">RETURN REQUESTED</span>
+
+<% } else if(isReturned){ %>
+
+  <span class="badge bg-info">RETURNED</span>
+
+<% } else if(isReturnRejected){ %>
+
+  <span class="badge bg-secondary">RETURN REJECTED</span>
+
+<% } else if(product.status === "Processing"){ %>
+
+              <button class="btn btn-sm btn-danger cancel-product-btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#cancelProductModal"
+                      data-orderid="<%= order._id %>"
+                      data-orderitemid="<%= product._id %>">
+                Cancel Product
+              </button>
+
+            <% } else if(product.status === "Delivered"){ %>
+
+              <button class="btn btn-sm btn-warning return-product-btn"
+                      data-bs-toggle="modal"
+                      data-bs-target="#returnProductModal"
+                      data-orderid="<%= order._id %>"
+                      data-productid="<%= product._id %>">
+                Return Product
+              </button>
+
+            <% } %>
+
+          </div>
+
+        </div>
+
+        <hr>
+
+        <% }) %>
+
+      </div>
+
+      <% }) %>
+
+      <!-- PAGINATION -->
+      <nav>
+        <ul class="pagination justify-content-center mt-4">
+          <% for(let i=1; i<=totalPages; i++){ %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link" href="/orders?page=<%= i %>&search=<%= search %>">
+                <%= i %>
+              </a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL ORDER MODAL -->
+<div class="modal fade" id="cancelModal">
+  <div class="modal-dialog">
+    <div class="modal-content p-4">
+
+      <h5>Cancel Order</h5>
+
+      <form method="POST" action="/cancel-order">
+        <input type="hidden" name="orderId" id="modalOrderId">
+
+        <select name="reason" class="form-select mb-2" required>
+          <option value="">Select Reason</option>
+          <option>Ordered by mistake</option>
+          <option>Late delivery</option>
+        </select>
+
+        <textarea name="description" class="form-control mb-2"></textarea>
+
+        <button class="btn btn-danger">Confirm</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL PRODUCT MODAL -->
+<div class="modal fade" id="cancelProductModal">
+  <div class="modal-dialog">
+    <div class="modal-content p-4">
+
+      <h5>Cancel Product</h5>
+
+      <form method="POST" action="/cancel-product">
+        <input type="hidden" name="orderId" id="modalProductOrderId">
+        <input type="hidden" name="productId" id="modalProductId">
+
+        <select name="reason" class="form-select mb-2" required>
+          <option value="">Select Reason</option>
+          <option>Ordered by mistake</option>
+          <option>Price issue</option>
+        </select>
+
+        <textarea name="description" class="form-control mb-2"></textarea>
+
+        <button class="btn btn-danger">Confirm</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+<!-- RETURN PRODUCT MODAL -->
+<div class="modal fade" id="returnProductModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-4">
+
+      <h5>Return Product</h5>
+
+      <form method="POST" action="/return-product">
+        <input type="hidden" name="orderId" id="returnProductOrderId">
+        <input type="hidden" name="productId" id="returnProductId">
+
+        <select name="reason" class="form-select mb-2" required>
+          <option value="">Select Reason</option>
+          <option>Damaged</option>
+          <option>Wrong item</option>
+        </select>
+
+        <textarea name="description" class="form-control mb-2" placeholder="Optional"></textarea>
+
+        <button class="btn btn-warning">Confirm</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.querySelectorAll('.cancel-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.getElementById('modalOrderId').value = btn.dataset.id;
+    }
+  });
+
+  document.querySelectorAll('.cancel-product-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.getElementById('modalProductOrderId').value = btn.dataset.orderid;
+      document.getElementById('modalProductId').value = btn.dataset.orderitemid;
+    }
+  });
+
+
+
+document.querySelectorAll('.return-product-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.getElementById('returnProductOrderId').value = btn.dataset.orderid;
+    document.getElementById('returnProductId').value = btn.dataset.productid;
+  }
+});
+
+
+});
+
+
+</script>
+<!-- <script>
+
+document.querySelectorAll(".retry-payment-btn")
+.forEach(button => {
+
+  button.addEventListener("click", async function () {
+
+    const orderId = this.dataset.orderid;
+
+    // CREATE RETRY ORDER
+    const res = await fetch("/create-retry-payment", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({ orderId })
+
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+
+      Swal.fire({
+        icon: "error",
+        title: "Retry Failed"
+      });
+
+      return;
+    }
+
+    const options = {
+
+      key: data.keyId,
+
+      amount: data.amount,
+
+      currency: "INR",
+
+      order_id: data.razorpayOrderId,
+
+      handler: async function (response) {
+
+        // USE SAME VERIFY PAYMENT
+        const verifyRes = await fetch("/verify-payment", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            ...response,
+
+            orderId: orderId
+
+          })
+
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.success) {
+
+          window.location.href =
+            "/order-success/" + verifyData.orderId;
+
+        } else {
+
+          Swal.fire({
+            icon: "error",
+            title: "Verification Failed"
+          });
+
+        }
+
+      }
+
+    };
+
+    const rzp = new Razorpay(options);
+
+    rzp.open();
+
+  });
+
+});
+
+</script> -->
+
+<script>
+function retryPayment(orderId) {
+
+  // ORDER ID CHECK
+  if (!orderId) {
+
+    alert("Invalid order");
+
+    window.location.href = "/orders";
+
+    return;
+
+  }
+
+  // CREATE NEW RAZORPAY ORDER
+  fetch("/payment/razorpay/create-order", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      orderId
+    })
+
+  })
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    // CREATE ORDER FAILED
+    if (!data.success) {
+
+      alert("Unable to retry payment");
+
+      return;
+
+    }
+
+    // RAZORPAY OPTIONS
+    const options = {
+
+      key: data.keyId,
+
+      amount: data.amount,
+
+      currency: "INR",
+
+      order_id: data.razorpayOrderId,
+
+      name: "Your Store",
+
+      description: "Retry Payment",
+
+      // PAYMENT SUCCESS
+      handler: function (response) {
+
+        fetch("/verify-payment", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            razorpay_order_id:
+              response.razorpay_order_id,
+
+            razorpay_payment_id:
+              response.razorpay_payment_id,
+
+            razorpay_signature:
+              response.razorpay_signature,
+
+            orderId: orderId
+
+          })
+
+        })
+
+        .then(res => res.json())
+
+        .then(result => {
+
+          // PAYMENT VERIFIED
+          if (result.success) {
+
+            window.location.href =
+              "/order-success/" + orderId;
+
+          }
+
+          // VERIFICATION FAILED
+          else {
+
+            window.location.href =
+              "/order-failure?orderId=" + orderId;
+
+          }
+
+        });
+
+      },
+
+      // POPUP CLOSED
+      modal: {
+
+        ondismiss: function () {
+
+          window.location.href =
+            "/order-failure?orderId=" + orderId;
+
+        }
+
+      }
+
+    };
+
+    // OPEN RAZORPAY
+    const rzp = new Razorpay(options);
+
+    // PAYMENT FAILED EVENT
+    rzp.on("payment.failed", function (response) {
+
+      window.location.href =
+        "/order-failure?error=" +
+        encodeURIComponent(response.error.description) +
+        "&orderId=" + orderId;
+
+    });
+
+    rzp.open();
+
+  });
+
+}
+</script>
+
+
+
+<% if (orderMessage) { %>
+<script>
+  Swal.fire({
+    icon: 'success',
+   
+    text: '<%= orderMessage %>',
+  timer: 2000,
+    showConfirmButton: false
+  });
+</script>
+<% } %>
+<%- include('../../views/partials/user/footer') %>

@@ -1,0 +1,818 @@
+<%- include("../../views/partials/user/header") %>
+
+
+
+<style>
+
+
+.product-title{
+  min-height: 45px; /* Name length change aayalum same height */
+}
+
+.add-cart-btn{
+  background: linear-gradient(135deg, #c99a5b, #b8894d);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  width: 55%; 
+  margin: 0 auto;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.add-cart-btn:hover{
+  background: linear-gradient(135deg, #b8894d, #a7773f);
+  transform: translateY(-2px);
+  color: white;
+  
+  }
+</style>
+
+
+<section class="py-5">
+  <div class="container">
+    <h2 class="fw-bold text-center mb-4">Shop Products</h2>
+
+    <!--  Search + Clear (Moved to right) -->
+    <div class="d-flex justify-content-end align-items-center mb-4 flex-wrap gap-2">
+      <form id="searchForm" method="get" action="/shop" class="d-flex" style="max-width: 400px;">
+        <input 
+          type="text" 
+          name="search" 
+          class="form-control me-2" 
+          placeholder="Search products..."
+          value="<%= search %>"
+          
+        >
+        <a href="/shop" class="btn btn-outline-secondary">Clear</a>
+      </form>
+    </div>
+
+    <div class="row">
+      <!-- 🧭 Sidebar Filters -->
+      <aside class="col-lg-3 col-md-4 mb-4">
+        <form id="filterForm" method="get" action="/shop">
+
+          <!-- Category -->
+          <h5 class="fw-semibold mb-2">Category</h5>
+          <select name="category" class="form-select mb-4" onchange="applyFilter()">
+            <option value="">All</option>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat._id %>" <%= category == cat._id ? 'selected' : '' %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+
+          <!-- Price -->
+     <!-- 💰 Price Filter Buttons -->
+<div class="price-filter mb-4">
+  <div class="filter-title fw-semibold mb-2">Filter by Price</div>
+  <div class="price-options d-flex flex-wrap gap-2">
+
+    <button type="button" class="price-button btn btn-outline-primary" onclick="setPriceRange(0, 500)">
+      Under ₹500
+    </button>
+
+    <button type="button" class="price-button btn btn-outline-primary" onclick="setPriceRange(500, 1000)">
+      ₹500 - ₹1000
+    </button>
+
+    <button type="button" class="price-button btn btn-outline-primary" onclick="setPriceRange(1000, 1500)">
+      ₹1000 - ₹1500
+    </button>
+
+    <button type="button" class="price-button btn btn-outline-primary" onclick="setPriceRange(1500, 1000000)">
+      Above ₹1500
+    </button>
+
+  </div>
+</div>
+
+
+          <!-- Sort -->
+          <h5 class="fw-semibold mb-2">Sort By</h5>
+          <select name="sort" class="form-select mb-4" onchange="applyFilter()">
+            <option value="">Default</option>
+            <option value="lowToHigh" <%= sort === 'lowToHigh' ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="highToLow" <%= sort === 'highToLow' ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="aToZ" <%= sort === 'aToZ' ? 'selected' : '' %>>A → Z</option>
+            <option value="zToA" <%= sort === 'zToA' ? 'selected' : '' %>>Z → A</option>
+          </select>
+
+        </form>
+      </aside>
+
+      <!--  Product Grid -->
+      <div class="col-lg-9 col-md-8">
+        <% if (products && products.length > 0) { %>
+          <div class="row g-4">
+            <% products.forEach(product => { %>
+              <div class="col-lg-4 col-md-6 d-flex">
+                <div class="card border-0 shadow-sm w-100 position-relative">
+
+                  <!-- Wishlist Icon -->
+                  <!-- <span class="wishlist-icon position-absolute top-0 end-0 p-2">
+                    <i class="fa fa-heart"></i>
+                  </span> -->
+<span 
+class="wishlist-icon position-absolute top-0 end-0 p-2 openWishlistModal"
+
+data-product-id="<%= product._id %>"
+data-variant-id="<%= product.randomVariant?._id %>"
+data-product-name="<%= product.product_name %>"
+data-product-image="<%= product.randomVariant?.images[0] %>"
+data-color="<%= product.randomVariant?.color %>">
+
+<i class="fa fa-heart"></i>
+
+</span>
+                  <!-- Clickable Image -->
+                  <!-- <a href="/productDetails/<%= product._id %>"> -->
+                    <a href="/productDetails/<%= product._id %>?variant=<%= product.randomVariant?._id %>">
+                    <img 
+                      src="<%= product.randomVariant?.images[0] || product.variants[0]?.images[0] || '/img/placeholder.jpg' %>" 
+                      class="card-img-top main-image" 
+                      alt="<%= product.product_name %>"
+                    >
+                  </a>
+<div class="card-body text-center d-flex flex-column">
+
+
+                    <!-- Color Variants -->
+                    <div class="d-flex justify-content-center mb-3 flex-wrap">
+                      <% product.variants.forEach(variant => { %>
+                        <% if (variant.images && variant.images[0]) { %>
+                          <!-- <img 
+                            src="<%= variant.images[0] %>" 
+                            alt="<%= variant.color %>" 
+                            class="color-thumb"
+                            data-main-image="<%= variant.images[0] %>"
+                          > -->
+                          <img 
+  src="<%= variant.images[0] %>" 
+  alt="<%= variant.color %>" 
+  class="color-thumb"
+  data-main-image="<%= variant.images[0] %>"
+  data-variant-id="<%= variant._id %>"
+  data-color="<%= variant.color %>"
+>
+                        <% } %>
+                      <% }) %>
+                    </div>
+
+                    <h6 class="fw-bold"><%= product.product_name %></h6>
+
+<% if(product.randomVariant && product.randomVariant.offerPercentage > 0){ %>
+
+<!-- <p class="mb-1">
+    <span class="text-muted text-decoration-line-through me-2">
+      ₹<%= product.randomVariant.price %>
+    </span>
+    <span class="text-success fw-bold">
+      ₹<%= product.randomVariant.discount_price %>
+    </span>
+    <% 
+      const discountPercent = Math.round(
+        ((product.randomVariant.price - product.randomVariant.discount_price) / product.randomVariant.price) * 100
+      );
+    %>
+    <span class="badge bg-danger ms-1"><%= discountPercent %>% OFF</span>
+  </p> -->
+<p class="mb-1">
+  <span class="text-muted text-decoration-line-through me-2">
+    ₹<%= product.randomVariant.price %>
+  </span>
+
+  <span class="text-success fw-bold">
+    ₹<%= product.randomVariant.finalPrice %>
+  </span>
+
+  <span class="badge bg-danger ms-1">
+    <%= product.randomVariant.offerPercentage %>% OFF
+  </span>
+</p>
+
+
+
+<% } else { %>
+ 
+<p class="fw-bold text-success mb-1">
+  
+   ₹<%= product.randomVariant ? product.randomVariant.finalPrice : '' %>
+</p>
+
+<% } %>
+
+<!-- <% if (product.reviews && product.reviews.length > 0) { %>
+  <% 
+    let totalRating = 0;
+    product.reviews.forEach(r => totalRating += r.rating);
+    let avgRating = totalRating / product.reviews.length;
+  %>
+
+  <div class="mb-2">
+    <% for (let i = 1; i <= 5; i++) { %>
+      <% if (i <= Math.round(avgRating)) { %>
+        <i class="fa fa-star text-warning"></i>
+      <% } else { %>
+        <i class="fa fa-star-o text-warning"></i>
+      <% } %>
+    <% } %>
+    <small>(<%= product.reviews.length %>)</small>
+  </div>
+
+<% } else { %>
+  <div class="mb-2 text-muted small">
+    No reviews yet
+  </div>
+<% } %> -->
+<div class="mt-auto">
+<button 
+  type="button"
+  class="btn add-cart-btn openCartModal"
+  data-product-id="<%= product._id %>"
+  data-variant-id="<%= product.randomVariant?._id %>"
+  data-product-name="<%= product.product_name %>"
+  data-product-image="<%= product.randomVariant?.images[0] %>"
+  data-color="<%= product.randomVariant?.color %>"
+  data-return-url="/shop">
+  <i class="fa-solid fa-cart-shopping me-2"></i>
+  Add to Cart
+</button>
+ 
+</div>
+
+
+                </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="text-center py-5">
+            <h4 class="text-muted">No products found.</h4>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-center mt-5">
+  <nav>
+    <ul class="pagination">
+      <% if (currentPage > 1) { %>
+        <li class="page-item">
+          <a class="page-link" href="?page=<%= currentPage - 1 %>&category=<%= category %>&search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>">Previous</a>
+        </li>
+      <% } %>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+          <a class="page-link" href="?page=<%= i %>&category=<%= category %>&search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>"><%= i %></a>
+        </li>
+      <% } %>
+
+      <% if (currentPage < totalPages) { %>
+        <li class="page-item">
+          <a class="page-link" href="?page=<%= currentPage + 1 %>&category=<%= category %>&search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>">Next</a>
+        </li>
+      <% } %>
+    </ul>
+  </nav>
+</div>
+
+
+
+
+</section>
+
+<!-- Add To Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Add to Cart</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <img id="modalImage" width="80">
+          <div>
+            <h6 id="modalName" class="mb-1"></h6>
+            <small class="text-muted">
+              Color: <span id="modalColor"></span>
+            </small>
+          </div>
+        </div>
+
+<form id="cartForm">
+           <input type="hidden" name="returnUrl" id="returnUrl">
+          <input type="hidden" name="productId" id="modalProductId">
+          <input type="hidden" name="variantId" id="modalVariantId">
+          <input type="hidden" name="size" id="selectedSize">
+
+          <div class="mb-3">
+            <label class="fw-semibold mb-2">Select Size:</label>
+            <div id="sizeOptions" class="d-flex flex-wrap gap-2"></div>
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100">
+            Add to Cart
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="wishlistModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Add to Wishlist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <img id="wishlistImage" width="80">
+          <div>
+            <h6 id="wishlistName"></h6>
+            <small>Color: <span id="wishlistColor"></span></small>
+          </div>
+        </div>
+
+        <input type="hidden" id="wishlistProductId">
+        <input type="hidden" id="wishlistVariantId">
+        <input type="hidden" id="wishlistSize">
+
+        <div class="mb-3">
+          <label>Select Size:</label>
+          <div id="wishlistSizes" class="d-flex gap-2 flex-wrap"></div>
+        </div>
+
+        <button id="saveWishlist" class="btn btn-danger w-100">
+          Add to Wishlist ❤️
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- JS for Auto Filter + Image Preview + Wishlist -->
+<script>
+
+document.getElementById("cartForm").addEventListener("submit", async (e) => {
+  e.preventDefault(); //  prevent reload
+
+  const productId = document.getElementById("modalProductId").value;
+  const variantId = document.getElementById("modalVariantId").value;
+  const size = document.getElementById("selectedSize").value;
+  const returnUrl = document.getElementById("returnUrl").value;
+
+  if (!size) {
+    Swal.fire({
+      icon: "warning",
+      title: "Please select size"
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch("/cart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        productId,
+        variantId,
+        size,
+        returnUrl
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+
+      Swal.fire({
+        icon: "success",
+        title: "Added to Cart",
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      //  cart count update
+      const cartCount = document.getElementById("cart-count");
+      if (cartCount) {
+        cartCount.innerText = data.cartCount;
+        cartCount.classList.remove("d-none");
+      }
+
+      //  close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+      modal.hide();
+
+    } else {
+      Swal.fire({
+        icon: "warning",
+        title: data.message || "Something went wrong"
+      });
+    }
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire("Error", "Server error", "error");
+  }
+});
+
+  function applyFilter() {
+    document.getElementById('filterForm').submit();
+  }
+// document.querySelectorAll(".color-thumb").forEach(thumb => {
+
+//   thumb.addEventListener("click", function() {
+
+//     const card = this.closest(".card");
+
+//     const mainImage = card.querySelector(".main-image");
+//     mainImage.src = this.dataset.mainImage;
+
+//     const addBtn = card.querySelector(".openCartModal");
+
+//     addBtn.dataset.variantId = this.dataset.variantId;
+//     addBtn.dataset.productImage = this.dataset.mainImage;
+//     addBtn.dataset.color = this.dataset.color;
+
+//     // update product details link
+//     const productLink = card.querySelector("a");
+//     const productId = addBtn.dataset.productId;
+
+//     productLink.href = `/productDetails/${productId}?variant=${this.dataset.variantId}`;
+
+//   });
+
+// });
+
+document.querySelectorAll(".color-thumb").forEach(thumb => {
+
+  thumb.addEventListener("click", function() {
+
+    const card = this.closest(".card");
+
+    const mainImage = card.querySelector(".main-image");
+    mainImage.src = this.dataset.mainImage;
+
+    //  CART button update
+    const addBtn = card.querySelector(".openCartModal");
+    addBtn.dataset.variantId = this.dataset.variantId;
+    addBtn.dataset.productImage = this.dataset.mainImage;
+    addBtn.dataset.color = this.dataset.color;
+
+    //  WISHLIST icon update
+    const wishlistIcon = card.querySelector(".openWishlistModal");
+    wishlistIcon.dataset.variantId = this.dataset.variantId;
+    wishlistIcon.dataset.productImage = this.dataset.mainImage;
+    wishlistIcon.dataset.color = this.dataset.color;
+
+    // optional: product link update
+    const productLink = card.querySelector("a");
+    const productId = addBtn.dataset.productId;
+    productLink.href = `/productDetails/${productId}?variant=${this.dataset.variantId}`;
+
+  });
+
+});
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Submit on Enter key in search
+  document.querySelector("input[name='search']").addEventListener("keypress", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById('searchForm').submit();
+    }
+  });
+});
+function setPriceRange(min, max) {
+  const form = document.getElementById("filterForm");
+  const minInput = form.querySelector("input[name='minPrice']");
+  const maxInput = form.querySelector("input[name='maxPrice']");
+  document.querySelectorAll(".price-button").forEach(btn => btn.classList.remove("active"));
+  event.target.classList.add("active");
+
+  // Update hidden inputs
+  if (minInput && maxInput) {
+    minInput.value = min;
+    maxInput.value = max;
+  } else {
+    // If inputs are missing, create hidden ones
+    const hiddenMin = document.createElement("input");
+    hiddenMin.type = "hidden";
+    hiddenMin.name = "minPrice";
+    hiddenMin.value = min;
+    form.appendChild(hiddenMin);
+
+    const hiddenMax = document.createElement("input");
+    hiddenMax.type = "hidden";
+    hiddenMax.value = max;
+    hiddenMax.name = "maxPrice";
+    form.appendChild(hiddenMax);
+  }
+
+  // Submit the form automatically
+  form.submit();
+}
+document.addEventListener("DOMContentLoaded", () => {
+
+  const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+
+  document.querySelectorAll(".openCartModal").forEach(button => {
+
+    button.addEventListener("click", async () => {
+
+      const productId = button.dataset.productId;
+      const variantId = button.dataset.variantId;
+      const productName = button.dataset.productName;
+      const image = button.dataset.productImage;
+      const color = button.dataset.color;
+
+      // Set basic info
+      document.getElementById("modalProductId").value = productId;
+      document.getElementById("modalVariantId").value = variantId;
+      document.getElementById("modalName").innerText = productName;
+      document.getElementById("modalImage").src = image;
+      document.getElementById("modalColor").innerText = color;
+document.getElementById("returnUrl").value = button.dataset.returnUrl;
+const returnUrl = button.dataset.returnUrl;
+document.getElementById("returnUrl").value = returnUrl; 
+      // Fetch only that variant sizes
+      const response = await fetch(`/getVariantSizes/${variantId}`);
+      const sizes = await response.json();
+
+      const sizeContainer = document.getElementById("sizeOptions");
+      sizeContainer.innerHTML = "";
+
+      sizes.forEach(size => {
+
+        if (size.stock > 0 && !size.isDeleted && size.isListed) {
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn btn-outline-dark";
+          btn.innerText = size.size;
+
+          btn.onclick = () => {
+            document.getElementById("selectedSize").value = size.size;
+
+            document.querySelectorAll("#sizeOptions button")
+              .forEach(b => b.classList.remove("active"));
+
+            btn.classList.add("active");
+          };
+
+          sizeContainer.appendChild(btn);
+        }
+
+      });
+
+      cartModal.show();
+
+    });
+
+  });
+
+});
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const wishlistModal = new bootstrap.Modal(document.getElementById('wishlistModal'));
+
+  document.querySelectorAll(".openWishlistModal").forEach(icon => {
+
+    icon.addEventListener("click", async () => {
+
+      const productId = icon.dataset.productId;
+      const variantId = icon.dataset.variantId;
+      const name = icon.dataset.productName;
+      const image = icon.dataset.productImage;
+      const color = icon.dataset.color;
+
+      document.getElementById("wishlistProductId").value = productId;
+      document.getElementById("wishlistVariantId").value = variantId;
+      document.getElementById("wishlistName").innerText = name;
+      document.getElementById("wishlistImage").src = image;
+      document.getElementById("wishlistColor").innerText = color;
+
+      const res = await fetch(`/getVariantSizes/${variantId}`);
+      const sizes = await res.json();
+
+      const sizeBox = document.getElementById("wishlistSizes");
+      sizeBox.innerHTML = "";
+
+      sizes.forEach(size => {
+
+        const btn = document.createElement("button");
+        btn.className = "btn btn-outline-dark";
+        btn.innerText = size.size;
+
+        btn.onclick = () => {
+
+          document.getElementById("wishlistSize").value = size.size;
+
+          document.querySelectorAll("#wishlistSizes button")
+          .forEach(b => b.classList.remove("active"));
+
+          btn.classList.add("active");
+
+        };
+
+        sizeBox.appendChild(btn);
+
+      });
+
+      wishlistModal.show();
+
+    });
+
+  });
+
+});
+
+
+
+document.getElementById("saveWishlist").addEventListener("click", async () => {
+
+  const productId = document.getElementById("wishlistProductId").value;
+  const variantId = document.getElementById("wishlistVariantId").value;
+  const size = document.getElementById("wishlistSize").value;
+
+  if (!size) {
+
+    Swal.fire({
+      icon:"warning",
+      title:"Please select size"
+    });
+
+    return;
+
+  }
+
+  const res = await fetch("/add-wishlist", {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      productId,
+      var_id:variantId,
+      size
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+
+    Swal.fire({
+      icon:"success",
+      title:"Added to Wishlist ❤️",
+      timer:1500,
+     
+    });
+const modal = bootstrap.Modal.getInstance(document.getElementById('wishlistModal'));
+modal.hide();
+  
+const countElement = document.getElementById("wishlist-count");
+
+countElement.innerText = data.count;
+countElement.classList.remove("d-none");
+
+  }
+else{
+   Swal.fire({
+    icon:"info",
+    title:data.message || "Already in wishlist"
+  });
+}
+
+
+
+
+});
+
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<% if (cartMessage) { %>
+<script>
+  Swal.fire({
+    icon: 'success',
+    title: 'Added to Cart!',
+    text: '<%= cartMessage %>',
+  timer: 2000,
+    showConfirmButton: false
+  });
+</script>
+<% } %>
+
+
+
+<style>
+aside {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+}
+h5 {
+  font-size: 1rem;
+}
+
+.card {
+  transition: transform 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.wishlist-icon{
+cursor:pointer;
+z-index:10;
+}
+.wishlist-icon i {
+  font-size: 22px;
+  color: #ccc;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.3s ease;
+}
+.wishlist-icon i.active {
+  color: #ff4d4d;
+  transform: scale(1.2);
+}
+.wishlist-icon i:hover {
+  transform: scale(1.2);
+}
+
+.color-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.3s ease;
+}
+.color-thumb:hover {
+  border: 2px solid #000;
+}
+
+
+.price-button {
+  border-radius: 20px;
+  padding: 6px 15px;
+  font-size: 0.9rem;
+  color: #000; /* 🖤 Black text */
+  border: 1px solid #ccc;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.price-button:hover {
+  background-color: #0d6efd;
+  color: #fff; /* White text when hovered */
+  border-color: #0d6efd;
+}
+.price-button.active {
+  background-color: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+
+</style>
+
+<%- include("../../views/partials/user/footer") %>

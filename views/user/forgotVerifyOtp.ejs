@@ -1,0 +1,310 @@
+<%- include("../../views/partials/user/header") %>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<style>
+  body {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* OTP Container */
+  .otp-container {
+    max-width: 420px;
+    margin: 90px auto;
+    padding: 35px 30px;
+    border-radius: 18px;
+    background: #ffffff;
+    text-align: center;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Top Gradient Border Effect */
+  .otp-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 6px;
+    width: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997, #17a2b8);
+  }
+
+  /* Heading */
+  .otp-container h2 {
+    margin-bottom: 25px;
+    font-weight: 700;
+    font-size: 26px;
+    color: #222;
+    letter-spacing: 0.5px;
+  }
+
+  /* OTP input boxes */
+  .otp-inputs input {
+    width: 52px;
+    height: 55px;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    margin: 0 6px;
+    transition: 0.25s ease;
+    background: #f8f9fa;
+  }
+
+  .otp-inputs input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.25);
+    outline: none;
+    transform: scale(1.05);
+    background: #fff;
+  }
+
+  /* Verify OTP button */
+  .btn-verify {
+    background: linear-gradient(90deg, #28a745, #20c997);
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 16px;
+    transition: 0.3s;
+    box-shadow: 0 8px 18px rgba(40, 167, 69, 0.25);
+  }
+
+  .btn-verify:hover {
+    background: linear-gradient(90deg, #218838, #17a589);
+    transform: translateY(-2px);
+  }
+
+  /* Timer */
+  #timer {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* Resend OTP link */
+  #resendLink {
+    font-size: 14px;
+    color: #007bff;
+    opacity: 0.6;
+    pointer-events: none;
+    transition: 0.3s;
+  }
+
+  #resendLink.active {
+    opacity: 1;
+    pointer-events: auto;
+    font-weight: 700;
+    color: #007bff;
+  }
+
+  #resendLink.active:hover {
+    text-decoration: underline;
+  }
+</style>
+
+
+<div class="otp-container">
+  <h2>OTP Verification</h2>
+
+  <form action="/forgot-verify-otp" method="POST">
+    <input type="hidden" id="message" value="<%= typeof message !== 'undefined' ? message : '' %>"/>
+    <input type="hidden" name="email" id="email"     value="<%= email %>"/>
+    <input type="hidden" name="purpose" id="purpose"    value="<%= purpose %>"/>
+
+    <div class="otp-inputs d-flex justify-content-center mb-3">
+      <input type="text" maxlength="1" name="otp[]" required>
+      <input type="text" maxlength="1" name="otp[]" required>
+      <input type="text" maxlength="1" name="otp[]" required>
+      <input type="text" maxlength="1" name="otp[]" required>
+      <input type="text" maxlength="1" name="otp[]" required>
+      <input type="text" maxlength="1" name="otp[]" required>
+    </div>
+
+    <button type="submit" class="btn btn-verify w-100">Verify OTP</button>
+  </form>
+
+  <div class="timer mt-2 mb-2" id="timer"></div>
+  <a href="#" id="resendLink" class="d-block text-center">Resend OTP</a>
+</div>
+
+
+<!-- <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const message = document.getElementById('message').value;
+    if (message)  swal(message);
+      startTimer(60)
+    
+  });
+
+
+function startTimer(duration) {
+    let seconds = duration;
+    let timer = document.getElementById("timer");
+    let resendLink = document.getElementById("resendLink");
+
+    resendLink.classList.remove("active"); 
+    timer.style.display = "block";
+
+    let countdown = setInterval(() => {
+      timer.textContent = `Please wait ${seconds}s to resend OTP .`;
+      seconds--;
+
+      if (seconds < 0) {
+        clearInterval(countdown);
+        timer.textContent = "";
+        resendLink.classList.add("active"); 
+      }
+    }, 1000);
+  }
+
+  document.querySelectorAll(".otp-inputs input").forEach((input, idx, inputs) => {
+    input.addEventListener("input", () => {
+      if (input.value && idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      }
+    });
+  });
+document.getElementById("resendLink").addEventListener("click", async (e) => {
+  e.preventDefault();
+  const resendLink = document.getElementById("resendLink");
+
+  if (!resendLink.classList.contains("active")) return;
+
+  resendLink.classList.remove("active");
+
+  const email = document.getElementById("email").value;
+  const purpose = document.getElementById("purpose").value;
+
+  try {
+    const response = await fetch("/resend-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, purpose })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      swal("Success", "New OTP has been sent to your email!", "success");
+      startTimer(60);
+    } else {
+      swal("Error", data.message || "Failed to resend OTP", "error");
+    }
+  } catch (err) {
+    swal("Error", "Something went wrong!", "error");
+  }
+});
+</script> -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const message = document.getElementById('message').value;
+  if (message) swal(message);
+
+  //  get stored timer (for refresh / wrong OTP)
+  let endTime = localStorage.getItem("otpEndTime");
+
+  if (!endTime || Date.now() > endTime) {
+    endTime = Date.now() + 60 * 1000;
+    localStorage.setItem("otpEndTime", endTime);
+  }
+
+  startTimer();
+
+});
+
+function startTimer() {
+  let timer = document.getElementById("timer");
+  let resendLink = document.getElementById("resendLink");
+
+  resendLink.classList.remove("active");
+
+  let countdown = setInterval(() => {
+
+    let endTime = localStorage.getItem("otpEndTime");
+    let remaining = Math.floor((endTime - Date.now()) / 1000);
+
+    if (remaining <= 0) {
+      clearInterval(countdown);
+      timer.textContent = "";
+      resendLink.classList.add("active");
+      localStorage.removeItem("otpEndTime");
+    } else {
+      timer.textContent = `Please wait ${remaining}s to resend OTP`;
+    }
+
+  }, 1000);
+}
+
+
+//  OTP auto focus + backspace
+document.querySelectorAll(".otp-inputs input").forEach((input, idx, inputs) => {
+
+  input.addEventListener("input", () => {
+    if (input.value && idx < inputs.length - 1) {
+      inputs[idx + 1].focus();
+    }
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !input.value && idx > 0) {
+      inputs[idx - 1].focus();
+    }
+  });
+
+});
+
+
+// RESEND OTP
+document.getElementById("resendLink").addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  const resendLink = document.getElementById("resendLink");
+
+  if (!resendLink.classList.contains("active")) return;
+
+  resendLink.classList.remove("active");
+
+  const email = document.getElementById("email").value;
+  const purpose = document.getElementById("purpose").value;
+
+  try {
+    const response = await fetch("/resend-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, purpose })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      swal("Success", "New OTP sent!", "success");
+
+      //  reset timer properly
+      localStorage.removeItem("otpEndTime");
+      localStorage.setItem("otpEndTime", Date.now() + 60 * 1000);
+
+      startTimer();
+
+    } else {
+      swal("Error", data.message || "Failed to resend OTP", "error");
+    }
+
+  } catch (err) {
+    swal("Error", "Something went wrong!", "error");
+  }
+});
+</script>
+
+
+
+
+
+<%- include("../../views/partials/user/footer") %>

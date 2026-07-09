@@ -1,0 +1,519 @@
+
+<%-include("../../views/partials/user/header")%>
+   <!-- Banner Carousel Start -->
+<section id="bannerCarousel">
+  <div id="homeBanner" class="carousel slide" data-bs-ride="carousel"  data-bs-interval="3000" >
+    
+    <!-- Indicators -->
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#homeBanner" data-bs-slide-to="0" class="active" aria-current="true"></button>
+      <button type="button" data-bs-target="#homeBanner" data-bs-slide-to="1"></button>
+      <button type="button" data-bs-target="#homeBanner" data-bs-slide-to="2"></button>
+    </div>
+
+    <!-- Carousel Items -->
+    <div class="carousel-inner">
+      <!-- Slide 1 -->
+      <div class="carousel-item active">
+        <img src="/img/bannerclogs.webp" class="d-block w-100" alt="Banner 1">
+        <div class="carousel-caption d-none d-md-block">
+    
+          <a href="/shop" class="btn btn-primary">Shop Now</a>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="carousel-item">
+        <img src="/img/banner.webp" class="d-block w-100" alt="Banner 2">
+        <div class="carousel-caption d-none d-md-block">
+      
+          <a href="/shop" class="btn btn-primary">Shop Now</a>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="carousel-item">
+        <img src="/img/banner1.webp" class="d-block w-100" alt="Banner 3">
+        <div class="carousel-caption d-none d-md-block">
+      
+          <a href="/shop" class="btn btn-primary">Shop Now</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeBanner" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeBanner" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+
+  </div>
+</section>
+            
+<section class="top-categories py-5 bg-light">
+  <div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Top Categories</h2>
+      <a href="/shop" class="text-dark fw-bold">See More &raquo;</a>
+    </div>
+
+    <div class="row g-4">
+
+      <% if(categories && categories.length > 0){ %>
+        <% categories.slice(0,3).forEach(category => { %>
+
+          <div class="col-lg-4 col-md-6 col-sm-12 d-flex">
+            <div class="card border-0 shadow-sm w-100 text-center">
+
+              <a href="/shop?category=<%= category._id %>">
+                <img 
+                  src="/img/<%= category.name.toLowerCase() %>.jpg" 
+                  alt="<%= category.name %>" 
+                  class="card-img-top category-img"
+                >
+              </a>
+
+              <div class="card-body">
+                <h5 class="fw-bold"><%= category.name %></h5>
+              </div>
+
+            </div>
+          </div>
+
+        <% }) %>
+      <% } else { %>
+        <p class="text-center text-muted">No categories found.</p>
+      <% } %>
+
+    </div>
+  </div>
+</section>
+
+<style>.top-categories .category-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.top-categories .category-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.top-categories h5 {
+  margin-top: 10px;
+}
+.add-cart-btn{
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+  transition: 0.3s ease;
+}
+
+.add-cart-btn:hover{
+  background-color: #000;
+  color: #fff;
+}
+
+
+</style>
+
+
+<section class="discover-banner py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h2 class="fw-bold display-5">Discover Our Latest Collection</h2>
+        <p class="text-muted mb-4">Explore the newest trends and find your perfect style today.</p>
+        <a href="/shop" class="btn btn-dark btn-lg">Shop Now</a>
+      </div>
+      <div class="col-md-6">
+        <a href="/shop">
+          <img src="/img/banner2.webp" alt="Discover Banner" class="img-fluid rounded shadow">
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.discover-banner h2 {
+  color: #222;
+}
+.discover-banner p {
+  font-size: 1.1rem;
+}
+.discover-banner img {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.discover-banner img:hover {
+  transform: scale(1.05);
+}
+</style>
+
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <h3 class="fw-bold mb-4 text-center">✨ New Arrivals</h3>
+
+    <% if (newArrivals && newArrivals.length > 0) { %>
+      <div class="row g-4">
+        <% newArrivals.forEach(product => { %>
+          <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card border-0 shadow-sm w-100 position-relative product-card">
+
+              <!--  Wishlist Icon -->
+              <button class="wishlist-btn position-absolute top-0 end-0 p-2 border-0 bg-transparent">
+                <i class="fa fa-heart"></i>
+              </button>
+
+              <!--  Product Image -->
+              <% 
+                const defaultVariant = product.variants?.[0];
+                const defaultImage = defaultVariant?.images?.[0] || '/img/placeholder.jpg';
+              %>
+
+              <a 
+                href="/productDetails/<%= product._id %>?variant=<%= defaultVariant?._id %>" 
+                class="product-link"
+                data-product-id="<%= product._id %>"
+                data-variant-id="<%= defaultVariant?._id %>"
+              >
+                <img 
+                  src="<%= defaultImage %>"
+                  class="card-img-top main-image"
+                  alt="<%= product.product_name %>"
+                  style="height: 250px; object-fit: cover;"
+                >
+              </a>
+
+              <div class="card-body text-center">
+
+
+
+                <!--  Color Variants -->
+                <div class="d-flex justify-content-center mb-3 flex-wrap">
+                  <% 
+                    const shownColors = new Set();
+                    product.variants.forEach(variant => {
+                      if (variant.images?.[0] && !shownColors.has(variant.color)) {
+                        shownColors.add(variant.color);
+                  %>
+                    <img 
+                      src="<%= variant.images[0] %>" 
+                      alt="<%= variant.color %>" 
+                      class="color-thumb"
+                      data-main-image="<%= variant.images[0] %>"
+                      data-variant-id="<%= variant._id %>"
+                      style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin:3px; cursor:pointer;"
+                    >
+                  <% 
+                      }
+                    }); 
+                  %>
+                </div>
+
+                <!--  Product Name -->
+                <h6 class="fw-bold"><%= product.product_name %></h6>
+<%
+const variant = defaultVariant;
+%>
+
+<% if (variant?.offerPercentage > 0) { %>
+
+<p class="mb-1">
+  <span class="text-muted text-decoration-line-through me-2">
+    ₹<%= variant.price %>
+  </span>
+
+  <span class="text-success fw-bold">
+    ₹<%= variant.finalPrice %>
+  </span>
+
+  <span class="badge bg-danger ms-1">
+    <%= variant.offerPercentage %>% OFF
+  </span>
+</p>
+
+<% } else { %>
+
+<p class="fw-bold text-success mb-1">
+  ₹<%= variant.price %>
+</p>
+
+<% } %>
+             
+<button 
+  type="button"
+  class="btn add-cart-btn openCartModal"
+  data-product-id="<%= product._id %>"
+  data-variant-id="<%= defaultVariant?._id %>"
+  data-product-name="<%= product.product_name %>"
+  data-product-image="<%= defaultImage %>"
+  data-color="<%= defaultVariant?.color %>"
+   data-return-url="/">
+  <i class="fa-solid fa-cart-shopping me-2"></i>
+  Add to Cart
+</button>
+
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="text-center text-muted">No new arrivals found.</p>
+    <% } %>
+ 
+  </div>
+</section>
+
+<!-- Add To Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Add to Cart</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <img id="modalImage" width="80">
+          <div>
+         
+            <h6 id="modalName" class="mb-1"></h6>
+            <small class="text-muted">
+              Color: <span id="modalColor"></span>
+            </small>
+          </div>
+        </div>
+<form id="cartForm">
+             <input type="hidden" name="returnUrl" id="returnUrl">
+          <input type="hidden" name="productId" id="modalProductId">
+          <input type="hidden" name="variantId" id="modalVariantId">
+          <input type="hidden" name="size" id="selectedSize">
+
+          <div class="mb-3">
+            <label class="fw-semibold mb-2">Select Size:</label>
+            <div id="sizeOptions" class="d-flex flex-wrap gap-2"></div>
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100">
+            Add to Cart
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.product-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.wishlist-btn {
+  color: #999;
+  font-size: 1.2rem;
+  transition: color 0.3s;
+}
+.wishlist-btn.active {
+  color: red;
+}
+.wishlist-btn:hover {
+  color: red;
+}
+.color-thumb:hover {
+  border: 2px solid #000;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  //  Change main image + update link when color clicked
+  document.querySelectorAll(".color-thumb").forEach(thumb => {
+    thumb.addEventListener("click", () => {
+      const card = thumb.closest(".card");
+      const mainImage = card.querySelector(".main-image");
+      const productLink = card.querySelector(".product-link");
+
+      if (!card || !mainImage || !productLink) return;
+
+      const productId = productLink.dataset.productId;
+      const variantId = thumb.dataset.variantId;
+      const newImage = thumb.dataset.mainImage;
+
+      //  Update main image
+      mainImage.src = newImage;
+
+      //  Update product link href
+      const newHref = `/productDetails/${productId}?variant=${variantId}`;
+      productLink.href = newHref;
+
+      //  Also update click event for main image
+      mainImage.onclick = (e) => {
+        e.preventDefault();
+        window.location.href = newHref;
+      };
+    });
+  });
+
+  //  Wishlist toggle
+  document.querySelectorAll(".wishlist-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      btn.classList.toggle("active");
+    });
+  });
+});
+document.addEventListener("DOMContentLoaded", () => {
+
+  const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+
+  document.querySelectorAll(".openCartModal").forEach(button => {
+
+    button.addEventListener("click", async () => {
+
+      const productId = button.dataset.productId;
+      const variantId = button.dataset.variantId;
+      const productName = button.dataset.productName;
+      const image = button.dataset.productImage;
+      const color = button.dataset.color;
+document.getElementById("returnUrl").value = button.dataset.returnUrl;
+      document.getElementById("modalProductId").value = productId;
+      document.getElementById("modalVariantId").value = variantId;
+      document.getElementById("modalName").innerText = productName;
+      document.getElementById("modalImage").src = image;
+      document.getElementById("modalColor").innerText = color;
+const returnUrl = button.dataset.returnUrl;
+document.getElementById("returnUrl").value = returnUrl; 
+      const response = await fetch(`/getVariantSizes/${variantId}`);
+      const sizes = await response.json();
+
+      const sizeContainer = document.getElementById("sizeOptions");
+      sizeContainer.innerHTML = "";
+
+      sizes.forEach(size => {
+
+        if (size.stock > 0 && !size.isDeleted && size.isListed) {
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn btn-outline-dark";
+          btn.innerText = size.size;
+
+          btn.onclick = () => {
+            document.getElementById("selectedSize").value = size.size;
+
+            document.querySelectorAll("#sizeOptions button")
+              .forEach(b => b.classList.remove("active"));
+
+            btn.classList.add("active");
+          };
+
+          sizeContainer.appendChild(btn);
+        }
+
+      });
+
+      cartModal.show();
+
+    });
+
+  });
+
+});
+
+
+
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+document.getElementById("cartForm").addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  const productId = document.getElementById("modalProductId").value;
+  const variantId = document.getElementById("modalVariantId").value;
+  const size = document.getElementById("selectedSize").value;
+  const returnUrl = document.getElementById("returnUrl").value;
+
+  if (!size) {
+    Swal.fire({
+      icon: "warning",
+      title: "Please select size"
+    });
+    return;
+  }
+
+  const response = await fetch("/cart", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      productId,
+      variantId,
+      size,
+      returnUrl
+    })
+  });
+
+  const data = await response.json();
+
+  if (data.success) {
+
+    Swal.fire({
+      icon: "success",
+      title: "Added to Cart",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    const cartCount = document.getElementById("cart-count");
+
+    if (cartCount) {
+      cartCount.innerText = data.cartCount;
+      cartCount.classList.remove("d-none");
+    }
+
+    bootstrap.Modal.getInstance(
+      document.getElementById("cartModal")
+    ).hide();
+
+  } else {
+
+    Swal.fire({
+      icon: "warning",
+      title: data.message
+    });
+
+  }
+
+});
+</script>
+<%-include("../../views/partials/user/footer")%>
+

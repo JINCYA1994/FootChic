@@ -1,0 +1,491 @@
+<%- include("../../views/partials/admin/header") %>
+
+<style>
+  .page-title {
+    font-weight: 800;
+    color: #222;
+  }
+
+  .custom-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eee;
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.05);
+    padding: 20px;
+  }
+
+  .custom-table th {
+    background: #f6f7fb;
+    color: #222;
+    font-weight: 700;
+    border: none;
+    padding: 14px;
+  }
+
+  .custom-table td {
+    padding: 14px;
+    border-top: 1px solid #f1f1f1;
+    vertical-align: middle;
+    color: #222;
+  }
+
+  .btn-round {
+    border-radius: 30px;
+    padding: 6px 18px;
+    font-weight: 600;
+  }
+
+  .badge-status {
+    border-radius: 30px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Pagination */
+  .pagination .page-link {
+    border-radius: 10px !important;
+    margin: 0 4px;
+    padding: 8px 14px;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    color: #333;
+  }
+
+  .pagination .page-link:hover {
+    background: #f1f1f1;
+  }
+
+  .pagination .active .page-link {
+    background: #2d7f3a !important;
+    border-color: #2d7f3a !important;
+    color: white !important;
+  }
+
+  /* Modal */
+  .modal-content {
+    border-radius: 14px;
+    border: none;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid #eee;
+  }
+
+  .modal-footer {
+    border-top: 1px solid #eee;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  /* Action Buttons Fix */
+  .action-btns .btn {
+    min-width: 90px;
+  }
+
+  /* Modal action buttons inline */
+  #variantTableBody td:last-child {
+    white-space: nowrap;
+  }
+
+  #variantTableBody td:last-child a,
+  #variantTableBody td:last-child button {
+    display: inline-block;
+    margin: 3px;
+  }
+
+  .delete-form {
+    display: inline-block !important;
+    margin: 0;
+  }
+
+  #variantTableBody img {
+    border-radius: 10px;
+    border: 1px solid #eee;
+  }
+</style>
+
+
+<div class="container mt-5 pt-4">
+
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fa-solid fa-circle-check me-2"></i> <%= success[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <!-- Heading -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="page-title mb-0">Product Management</h3>
+    </div>
+
+    <a href="/admin/products/add" class="btn btn-success btn-round">
+      <i class="fas fa-plus me-2"></i> Add Product
+    </a>
+  </div>
+
+  <!-- Search -->
+  <div class="d-flex justify-content-end mb-3">
+    <form action="/admin/products" method="GET" class="d-flex gap-2 align-items-center">
+
+      <input 
+        type="text" 
+        name="search" 
+        class="form-control"
+        placeholder="Search product..."
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+        style="width: 280px;"
+      >
+
+      <button class="btn btn-dark px-3" type="submit">
+        <i class="fa fa-search"></i>
+      </button>
+
+      <a href="/admin/products" class="btn btn-secondary px-3">
+        Clear
+      </a>
+
+    </form>
+  </div>
+
+  <!-- Table Card -->
+  <div class="custom-card">
+
+    <div class="table-responsive">
+      <table class="table custom-table align-middle mb-0 text-center">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Status</th>
+           <th>Variants</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% if(products && products.length > 0){ %>
+            <% products.forEach((product, index) => { %>
+              <tr>
+                <td class="fw-bold"><%= index + 1 %></td>
+
+                <td class="fw-bold"><%= product.product_name %></td>
+
+                <td class="text-muted">
+                  <%= product.category_id 
+                      ? (product.category_id.category_name || product.category_id.name) 
+                      : 'N/A' %>
+                </td>
+ <td>
+                  <% if(product.isListed) { %>
+                    <a href="/admin/products/unlist/<%= product._id %>"
+                      class="badge bg-success badge-status text-decoration-none">
+                      Listed
+                    </a>
+                  <% } else { %>
+                    <a href="/admin/products/list/<%= product._id %>"
+                      class="badge bg-danger badge-status text-decoration-none">
+                      Unlisted
+                    </a>
+                  <% } %>
+                </td>
+
+                <td>
+                  <span class="badge bg-info badge-status">
+                    <% product.variants.forEach(variant => { %>
+                      <div>
+                        Color: <%= variant.color %> —
+                        Sizes: <%= variant.sizes.length %>
+                      </div>
+                    <% }) %>
+                  </span>
+
+                  <br>
+
+                  <button 
+                    class="btn btn-sm btn-primary btn-round mt-2"
+                    onclick="openVariantModal('<%= product._id %>')">
+                    View Variants
+                  </button>
+                </td>
+
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                <i class="fa-solid fa-box-open fs-4 mb-2"></i>
+                <p class="m-0 fw-bold">No products found</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+
+      <% if(currentPage > 1) { %>
+        <li class="page-item">
+          <a class="page-link"
+            href="/admin/products?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>">
+            Previous
+          </a>
+        </li>
+      <% } %>
+
+      <% for(let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+          <a class="page-link"
+            href="/admin/products?page=<%= i %><%= search ? '&search=' + search : '' %>">
+            <%= i %>
+          </a>
+        </li>
+      <% } %>
+
+      <% if(currentPage < totalPages) { %>
+        <li class="page-item">
+          <a class="page-link"
+            href="/admin/products?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>">
+            Next
+          </a>
+        </li>
+      <% } %>
+
+    </ul>
+  </nav>
+
+</div>
+
+
+<!-- Variant Modal -->
+<div class="modal fade" id="variantModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Product Variants</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table custom-table text-center align-middle">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th>Discount</th>
+                <th>Size</th>
+                <th>stock</th>
+                <th>maxOrderQty</th>
+              <th>Update</th>
+                <th>Status</th>
+                <th style="width: 260px;">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="variantTableBody">
+              <!-- JS will insert rows -->
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const productsData = <%- JSON.stringify(products) %>;
+
+function openVariantModal(productId) {
+  const product = productsData.find(p => p._id === productId);
+  const tbody = document.getElementById("variantTableBody");
+  tbody.innerHTML = "";
+
+  product.variants.forEach(variant => {
+    variant.sizes.forEach(size => {
+      if (size.isDeleted) return;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>
+            <img src="${variant.images?.[0] || ''}"
+                 style="width:60px;height:60px;object-fit:cover">
+          </td>
+          <td>${variant.color || 'N/A'}</td>
+          <td>₹${variant.price}</td>
+          <td>${variant.discount_price || '-'}</td>
+          <td>${size.size}</td>
+          <td>${size.stock}</td>
+          <td>
+
+  <input type="number"
+    min="1"
+    id="limit-${size._id}"
+    value="${size.maxOrderQty || 10}"
+    style="width:70px;">
+</td>
+<td>
+  <button 
+    class="btn btn-sm btn-success btn-round"
+    onclick="handleUpdateLimit('${product._id}','${variant._id}','${size._id}')">
+    Update
+  </button>
+</td>
+
+
+          <td>
+            ${size.isListed
+              ? '<span class="badge bg-success badge-status">Listed</span>'
+              : '<span class="badge bg-danger badge-status">Unlisted</span>'}
+          </td>
+          <td>
+            <a href="/admin/products/${product._id}/variant/${variant._id}/size/${size._id}/${size.isListed ? 'unlist' : 'list'}"
+               class="btn btn-sm btn-secondary btn-round">
+               ${size.isListed ? 'Unlist' : 'List'}
+            </a>
+
+            <form method="POST"
+              action="/admin/products/${product._id}/variant/${variant._id}/size/${size._id}/delete"
+              class="d-inline delete-form">
+              <button type="submit" class="btn btn-sm btn-danger btn-round">
+                Delete
+              </button>
+            </form>
+
+            <a href="/admin/products/${product._id}/variant/${variant._id}/size/${size._id}/edit"
+              class="btn btn-sm btn-warning btn-round">
+              Edit
+            </a>
+
+          </td>
+    
+        </tr>
+      `;
+    });
+  });
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("variantModal")
+  );
+  modal.show();
+}
+function updateLimit(productId, variantId, sizeId, value) {
+  fetch(`/admin/products/${productId}/variant/${variantId}/size/${sizeId}/update-limit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      maxOrderQty: value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      console.log(" Updated");
+    } else {
+      alert(data.message || "Update failed");
+    }
+  })
+  .catch(err => console.log(err));
+}
+
+function handleUpdateLimit(productId, variantId, sizeId) {
+
+  const input = document.getElementById(`limit-${sizeId}`);
+  const value = input.value;
+
+  fetch(`/admin/products/${productId}/variant/${variantId}/size/${sizeId}/update-limit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      maxOrderQty: value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+      
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: data.message || 'Update failed'
+      });
+    }
+  })
+  .catch(err => {
+    console.log(err);
+  });
+}
+
+
+
+/* SweetAlert delete confirmation */
+document.addEventListener("submit", function (e) {
+  if (e.target.classList.contains("delete-form")) {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!"
+    }).then(result => {
+      if (result.isConfirmed) {
+        e.target.submit();
+      }
+    });
+  }
+});
+</script>
+<% if(message){ %>
+
+<script>
+
+Swal.fire({
+  icon: '<%= message.type %>',
+  title: '<%= message.text %>',
+  timer: 1500,
+  showConfirmButton: false
+});
+
+</script>
+
+<% } %>
+<%- include("../../views/partials/admin/footer") %>

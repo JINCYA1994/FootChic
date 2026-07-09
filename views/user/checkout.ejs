@@ -1,0 +1,934 @@
+<%- include("../partials/user/header") %>
+
+<div class="container py-5">
+  <div class="row">
+
+    <!-- LEFT SIDE - ADDRESS SECTION -->
+    <div class="col-md-7 mb-4">
+
+      <div class="card shadow-sm p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold">Shipping Address</h5>
+        <button class="btn btn-sm btn-dark" id="addAddressBtn">
+ADD NEW ADDRESS
+</button>
+        </div>
+
+        <% addresses.forEach(address => { %>
+
+          <div class="border rounded p-3 mb-3">
+
+            <div class="form-check">
+              <input class="form-check-input"
+                     type="radio"
+                     name="selectedAddress"
+                     value="<%= address._id %>"
+                     <%= address.is_default ? "checked" : "" %> >
+            </div>
+
+            <h6 class="fw-bold mt-2">
+              <%= address.name %>
+            </h6>
+
+            <p class="mb-1">
+              <%= address.house_name %>, <%= address.locality%>
+            </p>
+
+            <p class="mb-1">
+              <%= address.city %>, <%= address.state %>
+            </p>
+
+            <p class="mb-1">
+              Pin: <%= address.pincode %>
+            </p>
+
+            <p>
+              Ph: <%= address.mobilenumber %>
+            </p>
+
+          <button class="btn btn-sm btn-dark editAddressBtn"
+data-id="<%= address._id %>"
+data-name="<%= address.name %>"
+data-house="<%= address.house_name %>"
+data-locality="<%= address.locality %>"
+data-city="<%= address.city %>"
+data-state="<%= address.state %>"
+data-pincode="<%= address.pincode %>"
+data-mobile="<%= address.mobilenumber %>">
+
+Edit
+</button>
+
+          </div>
+
+        <% }) %>
+
+      </div>
+
+    </div>
+
+
+    <!-- RIGHT SIDE - ORDER SUMMARY -->
+    <div class="col-md-5">
+
+      <div class="card shadow-sm p-4">
+
+        <h5 class="fw-bold mb-4">Your Order</h5>
+
+        <!-- PRODUCT LIST -->
+       <% cart.items.forEach(item => { 
+
+  const variant = item.product_id.variants.find(v =>
+    v._id.toString() === item.var_id.toString()
+  );
+const originalPrice = variant?.price || 0;
+const sellingPrice = item.finalPrice || originalPrice;
+
+
+  const image = variant?.images?.[0] || "/images/default.png";
+%>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+  <div class="d-flex align-items-center">
+    <img src="<%= image %>" width="60" class="me-3 rounded">
+
+    <div>
+      <h6 class="mb-1">
+        <%= item.product_id.product_name %>
+      </h6>
+      <small>Size: <%= item.size %></small><br>
+      <small>Qty: <%= item.quantity %></small>
+
+<% if (sellingPrice < originalPrice) { %>
+
+<div>
+  <small class="text-muted text-decoration-line-through">
+    ₹<%= originalPrice %>
+  </small>
+
+  <small class="text-danger fw-bold ms-2">
+    ₹<%= sellingPrice %>
+  </small>
+</div>
+
+<% } else { %>
+
+<div>
+  ₹<%= originalPrice %>
+</div>
+
+<% } %>
+
+</div>
+  </div>
+
+  <strong>
+    ₹<%= sellingPrice * item.quantity %>
+  </strong>
+
+</div>
+
+<% }) %>
+
+        <hr>
+
+
+
+  <div class="input-group mb-2">
+    <input type="text"  id="couponInput"
+           class="form-control"
+           placeholder="Enter coupon code"
+           name="couponCode">
+        
+    <button class="btn btn-outline-dark"  id="applyCouponBtn">
+      APPLY
+    </button>
+
+<!-- <button class="btn btn-sm btn-danger w-100 mt-2 d-none" id="removeCouponBtn">
+  REMOVE COUPON
+</button> -->
+
+  </div>
+
+
+
+<button class="btn btn-sm btn-warning w-100"
+        data-bs-toggle="modal"
+        data-bs-target="#couponModal">
+  VIEW AVAILABLE COUPONS
+</button>
+</div>
+
+        <hr>
+
+        <!-- PRICE SUMMARY -->
+        <div class="d-flex justify-content-between mb-2">
+          <span>Subtotal</span>
+          <span   id="subtotal">₹<%= subtotal %></span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2 text-success">
+          <span>Coupon Discount</span>
+          <span id="discount"  >- ₹<%= discount %></span>
+        </div>
+  <div class="d-flex justify-content-between mb-2 ">
+          <span>Taxes</span>
+          <span id="taxes"  >₹<%= taxes %></span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span  id="shipping"   >Shipping</span>
+          <span>₹<%= shipping %></span>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between fw-bold fs-5">
+          <span>Total</span>
+          <span  id="finalAmount" >₹<%= finalAmount %></span>
+        </div>
+
+        <hr>
+
+        <!-- PAYMENT METHODS -->
+        <!-- <form action="/place-order" method="POST"> -->
+          <form id="orderForm">
+          <input type="hidden" name="redirectTo" value="/checkout">
+
+          <input type="hidden" name="selectedAddress" id="selectedAddressInput">
+
+          <h6 class="fw-bold mb-3">Payment Method</h6>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input"
+                   type="radio"
+                   name="paymentMethod"
+                   value="Online">
+            <label class="form-check-label">
+              Online Payment
+            </label>
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input"
+                   type="radio"
+                   name="paymentMethod"
+                   value="Wallet">
+            <label class="form-check-label">
+              Wallet Payment
+            </label>
+          </div>
+
+          <div class="form-check mb-4">
+            <input class="form-check-input"
+                   type="radio"
+                   name="paymentMethod"
+                   value="COD"
+                   checked>
+            <label class="form-check-label">
+              Cash on Delivery
+            </label>
+          </div>
+
+          <button type="submit"
+                  class="btn btn-warning w-100 fw-bold py-2">
+            PLACE ORDER
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+<!-- COUPON MODAL -->
+<div class="modal fade" id="couponModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <!-- HEADER -->
+      <div class="modal-header">
+        <h5 class="modal-title">Available Coupons</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- BODY -->
+      <div class="modal-body">
+        <div class="row">
+
+          <% coupons.forEach(coupon => { 
+
+          
+            let saveAmount = "";
+
+            if (coupon.discount_type === "flat") {
+              saveAmount = "₹" + coupon.discount_value;
+            } else if (coupon.discount_type === "percentage") {
+              saveAmount = coupon.discount_value + "%";
+
+              if (coupon.max_discount) {
+                saveAmount += " (Up to ₹" + coupon.max_discount + ")";
+              }
+            }
+
+            const isEligible = subtotal >= coupon.min_purchase;
+
+          %>
+
+          <div class="col-md-6 mb-3">
+            <div class="coupon-card p-3">
+
+              <!-- TOP -->
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <small class="text-muted">
+                  Min Order: ₹<%= coupon.min_purchase %>
+                </small>
+
+                <span class="badge bg-success">
+                  SAVE <%= saveAmount %>
+                </span>
+              </div>
+
+              <!-- CODE -->
+              <h5 class="fw-bold"><%= coupon.code %></h5>
+
+              <!-- VALID DATE -->
+              <small class="text-muted d-block mb-2">
+                Valid till <%= new Date(coupon.end_date).toLocaleDateString() %>
+              </small>
+
+              <!-- BUTTON -->
+              <% if (isEligible) { %>
+
+                <button class="btn btn-outline-dark btn-sm copyBtn"
+                        data-code="<%= coupon.code %>">
+                  COPY
+                </button>
+
+              <% } else { %>
+
+                <button class="btn btn-light btn-sm text-muted" disabled>
+                  Add ₹<%= coupon.min_purchase - subtotal %> more
+                </button>
+
+              <% } %>
+
+            </div>
+          </div>
+
+          <% }) %>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+
+document.querySelectorAll(".copyBtn").forEach(btn => {
+
+  btn.addEventListener("click", function () {
+
+    navigator.clipboard.writeText(this.dataset.code);
+
+    Swal.fire({
+      icon: "success",
+      title: "Copied!",
+      text: "Coupon code copied successfully",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+  });
+
+});
+
+const applyBtn = document.getElementById("applyCouponBtn");
+
+let couponApplied = false;
+
+applyBtn.addEventListener("click", async () => {
+
+  // REMOVE COUPON
+  if (couponApplied) {
+
+    const res = await fetch("/remove-coupon", {
+      method: "POST"
+    });
+
+    const data = await res.json();
+
+    document.getElementById("discount").innerText = "-₹0";
+    document.getElementById("finalAmount").innerText = "₹" + data.finalAmount;
+
+    applyBtn.innerText = "APPLY";
+    applyBtn.classList.remove("btn-danger");
+    applyBtn.classList.add("btn-outline-dark");
+
+    document.getElementById("couponInput").value = "";
+
+    couponApplied = false;
+
+    Swal.fire({
+      icon: "success",
+      title: "Coupon Removed"
+    });
+
+    return;
+  }
+
+  // APPLY COUPON
+  const code = document.getElementById("couponInput").value.trim();
+
+  if (!code) {
+    Swal.fire({
+      icon: "warning",
+      title: "Enter coupon code"
+    });
+    return;
+  }
+
+  const res = await fetch("/apply-coupon", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ code })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+
+    document.getElementById("discount").innerText = "-₹" + data.discount;
+
+    document.getElementById("finalAmount").innerText =
+      "₹" + data.finalAmount;
+
+    applyBtn.innerText = "REMOVE";
+
+    applyBtn.classList.remove("btn-outline-dark");
+
+    applyBtn.classList.add("btn-danger");
+
+    couponApplied = true;
+
+    Swal.fire({
+      icon: "success",
+      title: "Coupon Applied"
+    });
+
+  } else {
+
+    Swal.fire({
+      icon: "error",
+      title: data.message
+    });
+
+  }
+
+});
+
+</script>
+
+<script>
+  // Automatically set selected address into hidden input
+  const radios = document.querySelectorAll("input[name='selectedAddress']");
+  const hiddenInput = document.getElementById("selectedAddressInput");
+
+  radios.forEach(radio => {
+    radio.addEventListener("change", function () {
+      hiddenInput.value = this.value;
+    });
+
+    if (radio.checked) {
+      hiddenInput.value = radio.value;
+    }
+  });
+</script>
+<!-- ADD ADDRESS MODAL -->
+
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Add New Address</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<form action="/address" method="POST" id="addressform">
+<input type="hidden" name="redirectTo" value="/checkout">
+<input type="text" name="name"    id="name" class="form-control mb-2" placeholder="Full Name" >
+<div class="text-danger small mt-1" id="nameError"></div>
+<input type="text" name="house_name"   id="house_name" class="form-control mb-2" placeholder="House Name">
+<div class="text-danger small mt-1" id="house_nameError"></div>
+<input type="text" name="locality"id="locality"  class="form-control mb-2" placeholder="Locality" >
+<div class="text-danger small mt-1" id="localityError"></div>
+<input type="text" name="city" id="city"    class="form-control mb-2" placeholder="City">
+<div class="text-danger small mt-1" id="cityError"></div>
+<div class="select-wrapper">
+
+<select name="state" class="form-control" id="state">
+
+<option value="">Select State</option>
+
+<% states.forEach(state => { %>
+<option value="<%= state %>"><%= state %></option>
+<% }) %>
+
+</select>
+
+<div class="text-danger small mt-1" id="stateError"></div>
+
+</div>
+
+<input type="text" id="pincode"    name="pincode" class="form-control mb-2" placeholder="Pincode">
+<div class="text-danger small mt-1" id="pincodeError"></div>
+<input type="text"   id="mobilenumber"    name="mobilenumber" class="form-control mb-2" placeholder="Mobile Number" >
+<div class="text-danger small mt-1" id="mobilenumberError"></div>
+<button class="btn btn-warning w-100 fw-bold">
+SAVE ADDRESS
+</button>
+
+</form>
+
+</div>
+
+</div>
+</div>
+</div>
+<!-- ADDRESS MODAL -->
+
+<div class="modal fade" id="addressModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Edit Address</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<form action="/address" method="POST" id="editaddressform">
+  <input type="hidden" name="redirectTo" value="/checkout">
+<input type="hidden" name="addressId" id="editAddressId">
+
+<input type="text" id="edit_name" name="name" class="form-control mb-2" placeholder="Full Name">
+<div class="text-danger small mt-1" id="edit_nameError"></div>
+
+<input type="text" id="edithouse_name" name="house_name" class="form-control mb-2" placeholder="House Name">
+<div class="text-danger small mt-1" id="edithouse_nameError"></div>
+
+<input type="text" id="editlocality" name="locality" class="form-control mb-2" placeholder="Locality">
+<div class="text-danger small mt-1" id="editlocalityError"></div>
+
+<input type="text" id="editcity" name="city" class="form-control mb-2" placeholder="City">
+<div class="text-danger small mt-1" id="editcityError"></div>
+
+<div class="select-wrapper">
+
+<select name="state" class="form-control" id="editstate">
+
+<option value="">Select State</option>
+
+<% states.forEach(state => { %>
+<option value="<%= state %>"><%= state %></option>
+<% }) %>
+
+</select>
+
+<div class="text-danger small mt-1" id="editstateError"></div>
+
+</div>
+
+<input type="text" id="editpincode" name="pincode" class="form-control mb-2" placeholder="Pincode">
+<div class="text-danger small mt-1" id="editpincodeError"></div>
+
+<input type="text" id="editmobilenumber" name="mobilenumber" class="form-control mb-2" placeholder="Mobile">
+<div class="text-danger small mt-1" id="editmobilenumberError"></div>
+
+<button class="btn btn-dark w-100">
+Update Address
+</button>
+
+</form>
+
+</div>
+
+</div>
+</div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+<script>
+document.getElementById("orderForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const selectedAddress = document.getElementById("selectedAddressInput").value;
+
+  if (!selectedAddress) {
+      Swal.fire("Select an address");
+    return;
+  }
+
+  const paymentMethod = document.querySelector("input[name='paymentMethod']:checked").value;
+
+// COD
+if (paymentMethod === "COD") {
+
+  window.location.href =
+    "/place-order-cod?addressId=" + selectedAddress;
+
+  return;
+}
+
+// WALLET
+if (paymentMethod === "Wallet") {
+
+  window.location.href =
+    "/place-order-wallet?addressId=" + selectedAddress;
+
+  return;
+}
+
+// ONLINE PAYMENT
+const res = await fetch("/place-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ selectedAddress })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+   
+const options = {
+
+  key: "<%= process.env.RAZORPAY_KEY_ID %>",
+  amount: data.razorpayOrder.amount,
+  currency: "INR",
+  order_id: data.razorpayOrder.id,
+
+  handler: async function (response) {
+
+    const verifyRes = await fetch("/verify-payment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ...response,
+        addressId: selectedAddress,
+         orderId: data.orderId
+      })
+    });
+
+    const verifyData = await verifyRes.json();
+
+    if (verifyData.success) {
+
+      window.location.href =
+        "/order-success/" + verifyData.orderId;
+
+    } else {
+
+      window.location.href =
+        "/order-failure?error=verification_failed";
+
+    }
+  },
+
+  modal: {
+
+    ondismiss: async function () {
+   await fetch("/update-payment-failed", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        orderId: data.orderId
+      })
+
+    });   
+
+window.location.href =
+  "/order-failure?error=payment_cancelled&orderId=" + data.orderId;
+
+    }
+  }
+
+};
+    const rzp = new Razorpay(options);
+
+
+rzp.on("payment.failed", async function(response) {
+ await fetch("/update-payment-failed", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      orderId: data.orderId
+    })
+
+  });
+ window.location.href =
+  "/order-failure?error=" +
+  encodeURIComponent(response.error.description) +
+  "&orderId=" + data.orderId;
+  
+});
+    rzp.open();
+  }
+});
+</script>
+
+
+<script>
+
+
+const editBtns = document.querySelectorAll(".editAddressBtn");
+
+editBtns.forEach(btn => {
+
+btn.addEventListener("click", function(){
+
+document.getElementById("editAddressId").value = this.dataset.id;
+document.getElementById("edit_name").value = this.dataset.name;
+document.getElementById("edithouse_name").value = this.dataset.house;
+document.getElementById("editlocality").value = this.dataset.locality;
+document.getElementById("editcity").value = this.dataset.city;
+document.getElementById("editstate").value = this.dataset.state;
+document.getElementById("editpincode").value = this.dataset.pincode;
+document.getElementById("editmobilenumber").value = this.dataset.mobile;
+
+const modal = new bootstrap.Modal(document.getElementById("addressModal"));
+modal.show();
+
+});
+
+});
+
+const editForm = document.getElementById("editaddressform");
+
+editForm.addEventListener("submit", function(e){
+
+let isValid=true
+
+const name= document.getElementById('edit_name').value.trim()
+const house_name=document.getElementById('edithouse_name').value.trim()
+const locality=document.getElementById('editlocality').value.trim()
+const city=document.getElementById('editcity').value.trim()
+const state=document.getElementById('editstate').value.trim()
+const pincode=document.getElementById('editpincode').value.trim()
+const mobilenumber=document.getElementById('editmobilenumber').value.trim()
+
+document.getElementById("edit_nameError").innerText="";
+document.getElementById("edithouse_nameError").innerText="";
+document.getElementById("editlocalityError").innerText="";
+document.getElementById("editcityError").innerText="";
+document.getElementById("editstateError").innerText="";
+document.getElementById("editpincodeError").innerText="";
+document.getElementById("editmobilenumberError").innerText="";
+
+if(!name||!/^[a-zA-Z\s]+$/.test(name)){
+document.getElementById('edit_nameError').innerText="Enter valid name"
+isValid=false
+}
+
+if(!house_name||house_name.length<3){
+document.getElementById('edithouse_nameError').innerText="House name must be 3 characters"
+isValid=false
+}
+
+if(!locality||locality.length<3){
+document.getElementById('editlocalityError').innerText="Locality must be 3 characters"
+isValid=false
+}
+
+if(!city||city.length<2){
+document.getElementById('editcityError').innerText="City must be 2 characters"
+isValid=false
+}
+
+if(!state||state.length<2){
+document.getElementById('editstateError').innerText="State required"
+isValid=false
+}
+
+if(!/^[0-9]{6}$/.test(pincode)){
+document.getElementById('editpincodeError').innerText="Enter valid pincode"
+isValid=false
+}
+
+if(!/^[0-9]{10}$/.test(mobilenumber)){
+document.getElementById('editmobilenumberError').innerText="Enter valid mobile"
+isValid=false
+}
+
+if(!isValid){
+e.preventDefault()
+}
+
+})
+
+const addAddressBtn = document.getElementById("addAddressBtn");
+
+addAddressBtn.addEventListener("click", function(){
+
+const modal = new bootstrap.Modal(document.getElementById('addAddressModal'));
+modal.show();
+
+});
+const form = document.getElementById("addressform");
+
+form.addEventListener("submit", function (e){
+
+let isValid=true
+
+const name= document.getElementById('name').value.trim()
+const house_name=document.getElementById('house_name').value.trim()
+const locality=document.getElementById('locality').value.trim()
+const city=document.getElementById('city').value.trim()
+const state=document.getElementById('state').value.trim()
+const pincode=document.getElementById('pincode').value.trim()
+const mobilenumber=document.getElementById('mobilenumber').value.trim()
+
+document.getElementById("nameError").innerText = "";
+document.getElementById("house_nameError").innerText = "";
+document.getElementById("localityError").innerText = "";
+document.getElementById("cityError").innerText = "";
+document.getElementById("stateError").innerText = "";
+document.getElementById("pincodeError").innerText = "";
+document.getElementById("mobilenumberError").innerText = "";
+
+if(!name||!/^[a-zA-Z\s]+$/.test(name)){
+document.getElementById('nameError').innerText="Full name must be at least 3 characters"
+isValid=false
+}
+
+if(!house_name||house_name.length < 3){
+document.getElementById('house_nameError').innerText='House name must be at least 3 characters'
+isValid=false
+}
+
+if(!locality||locality.length<3){
+document.getElementById('localityError').innerText='Locality must be at least 3 characters'
+isValid=false
+}
+
+if(!state){
+document.getElementById('stateError').innerText='Please select a State'
+isValid=false
+}
+
+if(!city||city.length<2){
+document.getElementById('cityError').innerText='City must be at least 2 characters'
+isValid=false
+}
+
+if(!/^[0-9]{6}$/.test(pincode)){
+document.getElementById('pincodeError').innerText='Pincode must be exactly 6 digits'
+isValid=false
+}
+
+if(!/^[0-9]{10}$/.test(mobilenumber)){
+document.getElementById('mobilenumberError').innerText='Please enter a valid 10-digit mobile number'
+isValid=false
+}
+
+if (!isValid) {
+e.preventDefault(); 
+}
+
+})
+
+</script>
+
+<!-- Include SweetAlert before using it -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<% if (checkoutError) { %>
+<script>
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: '<%=checkoutError %>',
+     timer: 2000,
+    showConfirmButton: false
+  });
+</script>
+<% } %>
+
+
+
+
+
+
+
+
+<% if(messageAdded){ %>
+<script>
+  Swal.fire({
+    icon: "success",
+    title: "Address Added!",
+    text: "Your new address has been saved successfully",
+    timer: 2000,
+    showConfirmButton: false
+  });
+</script>
+<% } %>
+
+<% if(messageUpdated){ %>
+<script>
+  Swal.fire({
+    icon: "success",
+    title: "Address Updated!",
+    text: "Your address has been updated successfully",
+    timer: 2000,
+    showConfirmButton: false
+  });
+</script>
+<% } %>
+<style>
+.coupon-card {
+  border: 1px dashed #ddd;
+  border-radius: 12px;
+  background: #fff;
+  position: relative;
+  transition: 0.3s;
+}
+
+.coupon-card:hover {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.coupon-card h5 {
+  letter-spacing: 1px;
+}
+
+.badge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+</style>
+<%- include("../partials/user/footer") %>
