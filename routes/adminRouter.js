@@ -10,7 +10,7 @@ const categoryController=require('../controllers/admin/categoryController')
   const couponController =require('../controllers/admin/couponController')
   const offerController=require('../controllers/admin/offerController')
    const dashboardController=require('../controllers/admin/dashboardController')
-  
+  const cronController= require("../controllers/admin/cronController");
  const{userAuth,adminAuth}=require('../middlewares/auth')
 const upload = require('../config/multer'); 
 const preventAdminLogin = require('../middlewares/preventAdminLogin');
@@ -24,7 +24,7 @@ router.get('/pageerror',adminController.pageError)
 // //dashboard
 // router.get('/dashboard',adminAuth,adminController.loadDashboard)
 
-
+router.get("/cron",cronController.cronJob);
 
 //Customer Management
 router.get('/unblock/:id',adminAuth,customerController.unblockUser)
