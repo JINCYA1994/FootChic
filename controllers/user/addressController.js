@@ -23,8 +23,8 @@ const messageUpdated = req.session.addressUpdated;
 req.session.addressAdded = null;
 req.session.addressUpdated = null;   
 
-const userId = req.session.user;
-    const userData=await User.findById(userId)
+const userId = req.session.user._id;
+    const userData = await User.findById(userId);
     const addresses = await Address.find({ userId });
 
     res.render("address", {addresses,userData,states,messageAdded,messageUpdated});
@@ -52,10 +52,10 @@ if (!isValidPincode(pincode)){
 if(!isValidMobile(mobilenumber)){
   return res.status(400).json({message:'Invalid mobile number'})
 }
-if (addressId) {
+if (addressId && addressId.toString().trim() !== '') {
 
       await Address.findOneAndUpdate(
-        { _id: addressId, userId: req.session.user },{
+        { _id: addressId, userId: req.session.user._id },{
           name,
           house_name,
           locality,
@@ -69,11 +69,10 @@ if (addressId) {
       console.log("Address Updated Successfully");
 
     }else{
-const addressCount=await Address.countDocuments({userId:req.session.user})
+const addressCount=await Address.countDocuments({userId:req.session.user._id})
 const newAddress=new Address({
-  userId:req.session.user,
-  addressId,
-      name,
+  userId:req.session.user._id,
+  name,
       house_name,
       locality,
       city,
@@ -100,7 +99,7 @@ const deleteAddress=async (req,res) => {
   try {
    const addressId=req.params.id
 
-const address = await Address.findOne({_id: addressId, userId: req.session.user});
+const address = await Address.findOne({_id: addressId, userId: req.session.user._id});
 
   if (!address) {
       return res.json({ success: false })
@@ -109,12 +108,12 @@ const address = await Address.findOne({_id: addressId, userId: req.session.user}
    const wasDefault = address.is_default;
 
 
-    await Address.deleteOne({ _id: addressId,userId: req.session.user});
+    await Address.deleteOne({ _id: addressId,userId: req.session.user._id});
 
 
     if (wasDefault) {
 
-      const nextAddress = await Address.findOne({userId: req.session.user });
+      const nextAddress = await Address.findOne({userId: req.session.user._id });
 
       if (nextAddress) {
         nextAddress.is_default = true;

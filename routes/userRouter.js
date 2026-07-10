@@ -86,7 +86,7 @@ router.delete("/wishlist/:id", wishlistController.removeWishlistItem);
 
 // cart
 router.get('/cart',userAuth,cartController.getcartpage)
-router.post('/cart',userAuth,cartController.addToCart)
+router.post('/cart',cartController.addToCart)
 router.delete('/remove-cart/:id',userAuth,cartController.removeCartItem )
  router.post('/cart/update-quantity',userAuth ,cartController.updateQuantity);
 router.get("/checkout/check-items",userAuth,cartController.checkCheckoutItems);

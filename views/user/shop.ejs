@@ -168,20 +168,7 @@ data-color="<%= product.randomVariant?.color %>">
 
 <% if(product.randomVariant && product.randomVariant.offerPercentage > 0){ %>
 
-<!-- <p class="mb-1">
-    <span class="text-muted text-decoration-line-through me-2">
-      ₹<%= product.randomVariant.price %>
-    </span>
-    <span class="text-success fw-bold">
-      ₹<%= product.randomVariant.discount_price %>
-    </span>
-    <% 
-      const discountPercent = Math.round(
-        ((product.randomVariant.price - product.randomVariant.discount_price) / product.randomVariant.price) * 100
-      );
-    %>
-    <span class="badge bg-danger ms-1"><%= discountPercent %>% OFF</span>
-  </p> -->
+
 <p class="mb-1">
   <span class="text-muted text-decoration-line-through me-2">
     ₹<%= product.randomVariant.price %>
@@ -207,29 +194,7 @@ data-color="<%= product.randomVariant?.color %>">
 
 <% } %>
 
-<!-- <% if (product.reviews && product.reviews.length > 0) { %>
-  <% 
-    let totalRating = 0;
-    product.reviews.forEach(r => totalRating += r.rating);
-    let avgRating = totalRating / product.reviews.length;
-  %>
 
-  <div class="mb-2">
-    <% for (let i = 1; i <= 5; i++) { %>
-      <% if (i <= Math.round(avgRating)) { %>
-        <i class="fa fa-star text-warning"></i>
-      <% } else { %>
-        <i class="fa fa-star-o text-warning"></i>
-      <% } %>
-    <% } %>
-    <small>(<%= product.reviews.length %>)</small>
-  </div>
-
-<% } else { %>
-  <div class="mb-2 text-muted small">
-    No reviews yet
-  </div>
-<% } %> -->
 <div class="mt-auto">
 <button 
   type="button"
@@ -443,30 +408,6 @@ document.getElementById("cartForm").addEventListener("submit", async (e) => {
   function applyFilter() {
     document.getElementById('filterForm').submit();
   }
-// document.querySelectorAll(".color-thumb").forEach(thumb => {
-
-//   thumb.addEventListener("click", function() {
-
-//     const card = this.closest(".card");
-
-//     const mainImage = card.querySelector(".main-image");
-//     mainImage.src = this.dataset.mainImage;
-
-//     const addBtn = card.querySelector(".openCartModal");
-
-//     addBtn.dataset.variantId = this.dataset.variantId;
-//     addBtn.dataset.productImage = this.dataset.mainImage;
-//     addBtn.dataset.color = this.dataset.color;
-
-//     // update product details link
-//     const productLink = card.querySelector("a");
-//     const productId = addBtn.dataset.productId;
-
-//     productLink.href = `/productDetails/${productId}?variant=${this.dataset.variantId}`;
-
-//   });
-
-// });
 
 document.querySelectorAll(".color-thumb").forEach(thumb => {
 
