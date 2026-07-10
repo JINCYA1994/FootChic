@@ -606,6 +606,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const data = await res.json();
+  if (res.status === 401) {
+    Swal.fire({
+      icon: "warning",
+      title: "Login Required",
+      text: data.message
+    }).then(() => {
+      window.location.href = "/login";
+    });
+    return;
+  }
 
     if (data.success) {
 
@@ -677,6 +687,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const data = await response.json();
+  if ( response.status === 401) {
+    Swal.fire({
+      icon: "warning",
+      title: "Login Required",
+      text: data.message
+    }).then(() => {
+      window.location.href = "/login";
+    });
+    return;
+  }
 
     if (data.success) {
 

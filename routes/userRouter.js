@@ -81,7 +81,7 @@ router.post('/address',userAuth,addressController.saveAddress)
 router.delete("/address/:id",userAuth, addressController.deleteAddress);
 // wishlist
 router.get('/wishlist',userAuth,wishlistController.getwishlistPage)
-router.post("/add-wishlist",userAuth, wishlistController.addToWishlist);
+router.post("/add-wishlist", wishlistController.addToWishlist);
 router.delete("/wishlist/:id", wishlistController.removeWishlistItem);
 
 // cart

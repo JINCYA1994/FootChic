@@ -4,6 +4,9 @@ const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Cart=require('../../models/cartSchema')
 const Offer=require('../../models/offerSchema')
+
+
+
 const loadShop = async (req, res) => {
   try {
     const category = req.query.category || "";
@@ -18,6 +21,10 @@ const loadShop = async (req, res) => {
     const limit = 9;
     const cartMessage = req.session.cartMessage;
      req.session.cartMessage = null;
+   const wishlistError = req.session.wishlistError;
+    req.session.wishlistError = null;
+
+
     // Fetch listed categories
     const categories = await Category.find({ isListed: true,isDeleted:false });
 
@@ -220,7 +227,7 @@ const priceB =
       minPrice,
       maxPrice,
       userData,
-      cartMessage
+      cartMessage,wishlistError 
     });
 
   } catch (error) {

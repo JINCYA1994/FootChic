@@ -22,6 +22,10 @@ const getwishlistPage = async (req, res) => {
 
     }
 
+
+
+
+    
     if (!userId) return res.redirect('/login');
    
     const userData = req.session.user || null;
@@ -81,7 +85,7 @@ const addToWishlist = async (req, res) => {
 
   try {
 
-    const userId = req.session.user;
+  const userId = req.session.user;
     if (!userId) {
 
 return res.status(401).json({

@@ -149,9 +149,6 @@ const addToCart = async (req, res) => {
       });
     }
 
-    //  Get product
-    // const product = await Product.findById(productId);
-    // const product = await Product.findById(productId).populate("category");
     const product = await Product.findById(productId).populate("category_id");
 
     if (!product) {
