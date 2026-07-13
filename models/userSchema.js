@@ -45,7 +45,10 @@ email:{
   unique:true,
    sparse: true 
 },
-
+isGoogleUser: {
+  type: Boolean,
+  default: false
+},
     role:{
       type:String,
       enum:['admin','user'], 

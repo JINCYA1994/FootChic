@@ -3,7 +3,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const env=require('dotenv').config()
  const User=require('../models/userSchema')
 const session=require('express-session')
-
+const { generateReferralCode } = require('../helpers/referralHelper');
 
 passport.use(
   new GoogleStrategy(
@@ -22,12 +22,13 @@ passport.use(
     if (user) {
       return done(null, user);   // already exists -> login
     }
-
+const referralCode = generateReferralCode(profile.displayName);
     // create new user
     user = await User.create({
       username: profile.displayName,
       email: email,
       googleId: profile.id,
+       referralCode,
       isGoogleUser: true
     });
  
