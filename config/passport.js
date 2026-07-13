@@ -3,7 +3,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const env=require('dotenv').config()
  const User=require('../models/userSchema')
 const session=require('express-session')
-const { generateReferralCode } = require('../helpers/referralHelper');
+const generateReferralCode = require('../helpers/generateReferralCode');
 
 passport.use(
   new GoogleStrategy(
